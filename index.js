@@ -134,11 +134,22 @@ const resolvers = {
                 return books
             }
 
+            let booklist = books
+
+
             // if author is given search for matches
-            if (args.author) return books.filter(book => book.author === args.author)
+            if (args.author) {
+                booklist = booklist.filter(book => book.author === args.author)
+            }
 
             // if genre is given search for matches in genres array
-            if (args.genre) return books.filter(book => book.genres.includes(args.genre))
+            if (args.genre) {
+                booklist = booklist.filter(book => book.genres.includes(args.genre))
+            }
+
+            console.log('booklist', booklist)
+
+            return booklist
 
         },
         allAuthors: () => {
