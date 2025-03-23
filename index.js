@@ -1,5 +1,7 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
+const { v1: uuid } = require('uuid')
+
 
 let authors = [
     {
@@ -98,10 +100,19 @@ let books = [
 */
 
 const typeDefs = `
+
+    type Mutation {
+        addBook(
+            title: String!
+            author: String!
+            published: Int!
+            genres: [String!]!
+        ): Book
+    }
     type Author {
         name: String!
         id: ID!
-        born: Int!
+        born: Int
         bookCount: Int!
     }
 
@@ -158,6 +169,45 @@ const resolvers = {
     },
     Author: {
         bookCount: (author) => books.filter(book => book.author === author.name).length
+    },
+    Mutation: {
+        addBook: (root, args) => {
+
+            console.log('addBook.args', args)
+
+            // check if author already exists get id
+            const existingAuthor = authors.find(author => author.name === args.author)
+            console.log('existing author', existingAuthor)
+
+            authorId = existingAuthor ? existingAuthor.id : null
+
+            // if not exists create new record
+            if (!authorId) {
+                console.log('create new record')
+
+                authorId = uuid()
+
+                const author = {
+                    "name": args.author,
+                    "born": null,
+                    "id": authorId
+                }
+                console.log('author object to add: ', author)
+
+                authors = authors.concat(author)
+                console.log('authors after adding new author', authors)
+            }
+
+            console.log('authorId before adding book', authorId)
+
+            // add book
+            const book = { ...args, id: uuid() }
+            books = books.concat(book)
+
+            console.log('books after mutation', books)
+            console.log('authors after mutation', authors)
+            return book
+        }
     }
 }
 
