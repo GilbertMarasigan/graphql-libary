@@ -241,7 +241,7 @@ const resolvers = {
         editAuthor: async (root, args) => {
 
             const author = await Author.findOne({ name: args.name })
-            author.born = args.born
+            author.born = args.setBornTo
 
             try {
                 author.save()
