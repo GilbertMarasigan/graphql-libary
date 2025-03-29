@@ -159,37 +159,31 @@ const typeDefs = `
 
 const resolvers = {
     Query: {
-        bookCount: () => Book.collection.countDocuments(),
-        authorCount: () => Author.collection.countDocuments(),
-        allBooks: (root, args) => {
+        bookCount: async () => Book.collection.countDocuments(),
+        authorCount: async () => Author.collection.countDocuments(),
+        allBooks: async (root, args) => {
             console.log('allBooks.args', args)
+            let filter = {}
 
-            // if no author or genres given in the arguments
-            if (!args.author && !args.genre) {
-                console.log('no author and generes given')
-                return books
-            }
-
-            let booklist = books
-
-
-            // if author is given search for matches
+            // If author is given, find their ObjectId
             if (args.author) {
-                booklist = booklist.filter(book => book.author === args.author)
+                const author = await Author.findOne({ name: args.author })
+                if (!author) {
+                    return [] // Return empty array if author is not found
+                }
+                filter.author = author._id
             }
 
-            // if genre is given search for matches in genres array
+            // If genre is given, add it to the filter
             if (args.genre) {
-                booklist = booklist.filter(book => book.genres.includes(args.genre))
+                filter.genres = args.genre
             }
 
-            console.log('booklist', booklist)
-
-            return booklist
-
+            // Fetch books based on the constructed filter
+            return await Book.find(filter).populate('author')
         },
-        allAuthors: () => {
-            return authors
+        allAuthors: async () => {
+            return await Author.find({})
         }
     },
     Author: {
@@ -257,16 +251,6 @@ const resolvers = {
 
             return author
 
-            // console.log('editAuthor.args', args)
-            // const author = authors.find(p => p.name === args.name)
-            // console.log('editAuthor.author', author)
-            // if (!author) {
-            //     return null
-            // }
-
-            // const updatedAuthor = { ...author, born: args.setBornTo }
-            // authors = authors.map(p => p.name === args.name ? updatedAuthor : p)
-            // return updatedAuthor
         }
     }
 }
