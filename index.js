@@ -3,6 +3,7 @@ const { startStandaloneServer } = require('@apollo/server/standalone')
 const { v1: uuid } = require('uuid')
 const { GraphQLError } = require('graphql')
 
+
 let authors = [
     {
         name: 'Robert Martin',
@@ -123,7 +124,7 @@ const typeDefs = `
     type Book {
         title: String!,
         published: Int!,
-        author: String!,
+        author: Author!,
         id: ID!,
         genres: [String!]!
     }
