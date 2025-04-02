@@ -112,6 +112,9 @@ const resolvers = {
         },
         allAuthors: async () => {
             return await Author.find({})
+        },
+        me: (root, args, context) => {
+            return context.currentUser
         }
     },
     Author: {
