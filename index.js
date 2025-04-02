@@ -81,6 +81,7 @@ const typeDefs = `
         authorCount: Int!
         allBooks(author: String, genre: String): [Book!]!
         allAuthors: [Author!]!
+        allGenres: [String!]!
         me: User
     }
 `
@@ -115,7 +116,12 @@ const resolvers = {
         },
         me: (root, args, context) => {
             return context.currentUser
-        }
+        },
+        allGenres: async () => {
+            const books = await Book.find({}, 'genres') // Fetch only genres field
+            const genres = books.flatMap(book => book.genres) // Flatten array
+            return [...new Set(genres)] // Convert to unique set and back to array
+        },
     },
     Author: {
         bookCount: async (author) => {
