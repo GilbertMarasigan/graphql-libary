@@ -16,8 +16,7 @@ const jwt = require('jsonwebtoken')
 
 mongoose.set('strictQuery', false)
 
-const Book = require('./models/book')
-const Author = require('./models/author')
+
 const User = require('./models/user')
 
 const typeDefs = require('./schema')
@@ -49,21 +48,22 @@ const start = async () => {
     })
 
     const schema = makeExecutableSchema({ typeDefs, resolvers })
-    const serverCleanup = userServer({ schema }, wsServer)
+    const serverCleanup = useServer({ schema }, wsServer)
 
     const server = new ApolloServer({
         schema,
         plugins: [
-            ApolloServerPluginDrainHttpServer({ httpServer }), {
+            ApolloServerPluginDrainHttpServer({ httpServer }),
+            {
                 async serverWillStart() {
                     return {
                         async drainServer() {
                             await serverCleanup.dispose();
-                        }
-                    }
-                }
-            }
-        ]
+                        },
+                    };
+                },
+            },
+        ],
     })
 
     await server.start()
@@ -71,16 +71,20 @@ const start = async () => {
     app.use(
         '/',
         cors(),
+        bodyParser.json(),
         express.json(),
         expressMiddleware(server, {
             context: async ({ req }) => {
+                console.log('Headers:', req.headers);  // Debugging line
+                console.log('Body:', req.body);
                 const auth = req ? req.headers.authorization : null
                 if (auth && auth.startsWith('Bearer ')) {
+                    const decodedToken = jwt.verify(auth.substring(7), process.env.JWT_SECRET)
                     const currentUser = await User.findById(decodedToken.id)
                     return { currentUser }
                 }
-            }
-        })
+            },
+        }),
     )
 
     const PORT = 4000
