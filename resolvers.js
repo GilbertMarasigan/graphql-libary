@@ -44,8 +44,8 @@ const resolvers = {
         },
     },
     Author: {
-        bookCount: async (author) => {
-            return await Book.countDocuments({ author: author._id })
+        bookCount: async (author, args, { loaders }) => {
+            return loaders.bookCountLoader.load(author._id)
         }
     },
     Mutation: {

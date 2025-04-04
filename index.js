@@ -2,6 +2,7 @@ const { ApolloServer } = require('@apollo/server')
 const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer')
 const { expressMiddleware } = require('@apollo/server/express4')
 const { makeExecutableSchema } = require('@graphql-tools/schema')
+const bookCountLoader = require('./loaders/bookCountLoader')
 
 const { WebSocketServer } = require('ws')
 const { useServer } = require('graphql-ws/lib/use/ws')
@@ -81,7 +82,10 @@ const start = async () => {
                 if (auth && auth.startsWith('Bearer ')) {
                     const decodedToken = jwt.verify(auth.substring(7), process.env.JWT_SECRET)
                     const currentUser = await User.findById(decodedToken.id)
-                    return { currentUser }
+                    return {
+                        currentUser,
+                        loaders: { bookCountLoader }
+                    }
                 }
             },
         }),
